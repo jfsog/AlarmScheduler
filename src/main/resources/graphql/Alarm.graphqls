@@ -1,0 +1,19 @@
+scalar DateTime
+#Alarme
+type Alarm{
+    id: ID!,
+    time: DateTime!,
+    action: String!
+}
+type Mutation{
+    CreateAlarm(date: Int!,action: String!): Alarm
+    updateAlarm(id: ID!, time: Int, action: String): Alarm
+    deleteAlarm(id: ID!): String
+}
+
+type Query{
+    getAlarm(id: ID!): Alarm
+    GetAllAlamrs: [Alarm!]
+}
+
+

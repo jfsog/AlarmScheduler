@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: AlarmScheduler
+  graphql:
+    graphiql:
+      enabled: true
+    path: /graphql
