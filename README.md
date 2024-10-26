@@ -72,21 +72,24 @@ cd AlarmScheduler`
 
 Exemplo de query para criar um alarme:
 ```bash
-mutation {
-  createAlarm(dateTime: "2024-10-30T12:00:00Z", action: "Enviar mensagem para o Discord") {
+mutation MyMutation {
+  CreateAlarm(
+    action: "Teste de webhook_333"
+    dateTime: "2024-10-26T12:49:30.633-03:00"
+  ) {
     id
-    dateTime
     action
+    dateTime
   }
 }
 ```
 ### Consulta de Alarmes
 ```bash
-query {
-  getAllAlarms {
-    id
-    dateTime
+query MyQuery {
+  GetAllAlamrs {
     action
+    dateTime
+    id
     ringed
   }
 }
