@@ -1,6 +1,6 @@
 package com.jfsog.AlarmScheduler.repository;
 
-import com.jfsog.AlarmScheduler.Services.Alarm;
+import com.jfsog.AlarmScheduler.Data.Alarm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
