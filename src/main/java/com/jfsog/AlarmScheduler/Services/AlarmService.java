@@ -3,17 +3,16 @@ package com.jfsog.AlarmScheduler.Services;
 import com.jfsog.AlarmScheduler.Data.Alarm;
 import com.jfsog.AlarmScheduler.repository.AlarmRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.datetime.standard.DateTimeFormatterFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -21,39 +20,33 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class AlarmService {
+    public final MqttClientService mqttClientService;
     private final AlarmRepository alarmRepository;
-    @Value("${DISCORD_WEBHOOK_URL}")
-    private String DISCORD_WEBHOOK_URL;
+    private final DateTimeFormatter formatter
+            = new DateTimeFormatterFactory("dd-MM-yyyy HH:mm:ss").createDateTimeFormatter();
     @Autowired
-    public AlarmService(AlarmRepository alarmRepository) {
+    public AlarmService(AlarmRepository alarmRepository, MqttClientService mqttClientService) {
         this.alarmRepository = alarmRepository;
+        this.mqttClientService = mqttClientService;
     }
     @Scheduled(fixedRate = 5000)
     private void triggerAlarm() {
-        log.info("Disparo de alarme executado em {}", OffsetDateTime.now());
+        log.info("Disparo de alarme executado em {}", OffsetDateTime.now().format(formatter));
         alarmRepository.findAll()
                        .stream()
                        .filter(a -> a.getDateTime().isBefore(OffsetDateTime.now()))
                        .filter(a -> !a.getRinged())
                        .forEach(a -> {
-                           sendWebhook(a.getAction() + ": " + a.getDateTime().toZonedDateTime());
-                           a.setRinged(true);
-//                           a.setDateTime(OffsetDateTime.now().plusSeconds(3));
-//                           a.setAction(a.getAction() + a.getAction().length());
-                           alarmRepository.save(a);
+                           try {
+                               var str = a.getAction() + ": " + a.getDateTime().format(formatter);
+                               MqttMessage message = new MqttMessage(str.getBytes());
+                               mqttClientService.getMqttClient().publish("alarm/trigger", message);
+                               a.setRinged(true);
+                               alarmRepository.save(a);
+                           } catch (MqttException e) {
+                               throw new RuntimeException(e);
+                           }
                        });
-    }
-    private void sendWebhook(String content) {
-        try (HttpClient client = HttpClient.newHttpClient()) {
-            var request = HttpRequest.newBuilder()
-                                     .uri(URI.create(DISCORD_WEBHOOK_URL))
-                                     .POST(HttpRequest.BodyPublishers.ofString("{\"content\":\"" + content + "\"}"))
-                                     .header("Content-Type", "application/json")
-                                     .build();
-            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                  .thenAccept(response -> System.out.println(
-                          "Mensagem enviada para o discord: " + response.statusCode()));
-        }
     }
     public Alarm getAlarm(@Argument UUID id) {
         return alarmRepository.findById(id).orElseThrow(() -> new RuntimeException("Alarm not found"));

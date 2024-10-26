@@ -17,3 +17,5 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+mqtt:
+  broker-url: tcp://localhost:1883
