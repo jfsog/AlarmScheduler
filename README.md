@@ -49,7 +49,7 @@ src/
 1.  **Clone o repositório**:
 
 ```bash
-git clone https://github.com/seu-usuario/AlarmScheduler.git
+git clone https://github.com/jfsog/AlarmScheduler.git
 cd AlarmScheduler`
 ```
 2.  **Configuração de Variáveis Sensíveis**:
@@ -74,7 +74,7 @@ Exemplo de query para criar um alarme:
 ```bash
 mutation MyMutation {
   CreateAlarm(
-    action: "Teste de webhook_333"
+    action: "Teste de webhook"
     dateTime: "2024-10-26T12:49:30.633-03:00"
   ) {
     id
