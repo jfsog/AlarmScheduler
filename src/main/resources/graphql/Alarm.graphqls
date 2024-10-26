@@ -4,6 +4,7 @@ type Alarm{
     id: ID!,
     dateTime: DateTime!,
     action: String!
+    ringed: Boolean!
 }
 type Mutation{
     CreateAlarm(dateTime: DateTime!,action: String!): Alarm
@@ -15,5 +16,9 @@ type Query{
     getAlarm(id: ID!): Alarm
     GetAllAlamrs: [Alarm!]
 }
-
-
+type Subscription {
+    alarmTriggered: Alarm
+}
+enum STATUS{
+    PENDING,SEND,CANCELED
+}

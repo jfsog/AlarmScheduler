@@ -1,4 +1,4 @@
-package com.jfsog.AlarmScheduler.Services;
+package com.jfsog.AlarmScheduler.Data;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,4 +22,5 @@ public class Alarm {
     private UUID id;
     private String action;
     private OffsetDateTime dateTime;
+    private Boolean ringed = false;
 }

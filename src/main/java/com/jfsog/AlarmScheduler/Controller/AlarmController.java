@@ -1,7 +1,7 @@
 package com.jfsog.AlarmScheduler.Controller;
 
-import com.jfsog.AlarmScheduler.Services.Alarm;
-import com.jfsog.AlarmScheduler.repository.AlarmRepository;
+import com.jfsog.AlarmScheduler.Data.Alarm;
+import com.jfsog.AlarmScheduler.Services.AlarmService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -9,44 +9,35 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.time.OffsetDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 @Controller
 public class AlarmController {
-    private final AlarmRepository alarmRepository;
+    private final AlarmService alarmService;
     @Autowired
-    public AlarmController(AlarmRepository alarmRepository) {
-        this.alarmRepository = alarmRepository;
-    }
+    public AlarmController(AlarmService alarmService) {this.alarmService = alarmService;}
     @QueryMapping
     public Alarm getAlarm(@Argument UUID id) {
-        return alarmRepository.findById(id).orElseThrow(() -> new RuntimeException("Alarm not found"));
+        return alarmService.getAlarm(id);
     }
     @MutationMapping
     public String deleteAlarm(@Argument UUID id) {
-        var alarm=alarmRepository.findById(id).orElseThrow(() -> new RuntimeException("Alarm not found"));
-        alarmRepository.delete(alarm);
-        return alarm.getAction();
+        return alarmService.deleteAlarm(id);
     }
     @QueryMapping
     public List<Alarm> GetAllAlamrs() {
-        return alarmRepository.findAll().stream().sorted(Comparator.comparing(Alarm::getDateTime)).toList();
+        return alarmService.GetAllAlamrs();
     }
     @MutationMapping
     public Alarm CreateAlarm(@Argument OffsetDateTime dateTime, @Argument String action) {
-        return alarmRepository.saveAndFlush(Alarm.builder()
-                                                 .id(UUID.randomUUID())
-                                                 .action(action)
-                                                 .dateTime(dateTime)
-                                                 .build());
+        return alarmService.CreateAlarm(dateTime, action);
     }
     @MutationMapping
-    public Alarm updateAlarm(@Argument UUID id, @Argument OffsetDateTime dateTime, @Argument String action) {
-        var a = alarmRepository.findById(id).orElseThrow(() -> new RuntimeException("Alarm not found"));
-        if (dateTime != null) a.setDateTime(dateTime);
-        if (action != null) a.setAction(action);
-        return alarmRepository.save(a);
+    public Alarm updateAlarm(@Argument UUID id,
+                             @Argument OffsetDateTime dateTime,
+                             @Argument String action,
+                             @Argument Boolean ringed) {
+        return alarmService.updateAlarm(id, dateTime, action, ringed);
     }
 }
